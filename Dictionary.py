@@ -1,3 +1,4 @@
+import sys
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -6,16 +7,6 @@ import re
 
 
 class Dictionary:
-
-    def scraper(self):
-        word = input("What word do you want to define?")
-
-        r = requests.get(f"https://dictionary.cambridge.org/dictionary/english/{word.lower()}")
-        c = r.text
-        soup = BeautifulSoup(c, "html.parser")
-
-        data = json.load(open("dictionary.json"))
-        obj.checker(soup, word, data)
 
     def checker(self, soup, word, data):
         try:
@@ -33,9 +24,11 @@ class Dictionary:
                 counter += 1
 
             for i in range(counter):
-                print(f"{i + 1}: {definitions[i]}")
+                definition = str(definitions[i]).capitalize().strip()
+                print(f"{i + 1}: {definition}")
+            sys.exit(0)
 
-        except:
+        except AttributeError:
             obj.catcher(word, data)
 
     def catcher(self, word, data):
@@ -54,6 +47,17 @@ class Dictionary:
         else:
             print("Sorry, we couldn't define that word. Please check for typos.")
 
+    def main(self):
+        word = input("What word do you want to define?")
+
+        r = requests.get(f"https://dictionary.cambridge.org/dictionary/english/{word.lower()}")
+        c = r.text
+        soup = BeautifulSoup(c, "html.parser")
+
+        with open("dictionary.json") as dat:
+            data = json.load(dat)
+        obj.checker(soup, word, data)
+
 
 obj = Dictionary()
-obj.scraper()
+obj.main()
