@@ -43,7 +43,7 @@ class Dictionary:
         contents = self.word_entry.get()
         obj.main(contents)
 
-    def display(self, definitions, number, title):
+    def display(self, definitions, number, title, src):
         obj.label_initial.grid_remove()
         obj.word_entry.grid_remove()
         obj.submit_button.grid_remove()
@@ -61,7 +61,8 @@ class Dictionary:
         for i in range(number):
             definition = str(definitions[i]).capitalize()
             definit = tk.Label(
-                text=(str(i+1)+": "+definition),
+                text=(definition if src == "Wiki"
+                      else (str(i+1)+": "+str(definition))),
                 bg="black",
                 fg="white",
                 wraplength=500)
@@ -104,23 +105,72 @@ class Dictionary:
         self.button2.grid(row=3, column=1)
         self.button2.config(font="Courier")
 
-    def checker(self, soup, word, data):
-        try:
-            title = soup.find("span", {"class": "hw dhw"})
-            title_text = title.text.title()
+    def checker(self, soup, word, data, source):
+        if source == "Urban":
+            try:
+                title = soup.find("a", {"class": "word"})
+                title_text = title.text.title()
 
-            definitions = []
-            counter = 0
-            for deff in soup.find_all("div", {"class": "def ddef_d db"}):
-                deff = deff.text
-                deff = re.sub(r":", "", deff)
-                definitions.append(deff)
-                counter += 1
+                definitions = []
+                counter = 0
+                for deff in soup.find_all("div", {"class": "meaning"}):
+                    deff = deff.text
+                    definitions.append(deff)
+                    counter += 1
+                    if counter >= 3:
+                        break
 
-            obj.display(definitions, counter, title_text)
+                obj.display(definitions, counter, title_text, source)
 
-        except AttributeError:
-            obj.catcher(word, data)
+            except AttributeError:
+                obj.catcher(word, data)
+
+        elif source == "Wiki":
+            try:
+                title = soup.find("h1", {"class": "firstHeading"})
+                title_text = title.text.title()
+
+                definitions = []
+                counter = 0
+                for deff in soup.find_all("ol"):
+                    deff = deff.text.upper()
+                    definitions.append(str(counter+1)+": "+str(deff))
+                    counter += 1
+                    if counter >= 3:
+                        break
+
+                success = False
+                try:
+                    definitions[0]
+
+                except IndexError:
+                    success = True
+
+                if success:
+                    obj.catcher(word, data)
+                else:
+                    obj.display(definitions, counter, title_text, source)
+
+            except AttributeError:
+                obj.catcher(word, data)
+
+        elif source == "Default":
+            try:
+                title = soup.find("span", {"class": "hw dhw"})
+                title_text = title.text.title()
+
+                definitions = []
+                counter = 0
+                for deff in soup.find_all("div", {"class": "def ddef_d db"}):
+                    deff = deff.text
+                    deff = re.sub(r":", "", deff)
+                    definitions.append(deff)
+                    counter += 1
+
+                obj.display(definitions, counter, title_text, source)
+
+            except AttributeError:
+                obj.catcher(word, data)
 
     def catcher(self, word, data):
         if len(get_close_matches(word, data.keys())) > 0:
@@ -134,10 +184,35 @@ class Dictionary:
         c = r.text
         soup = BeautifulSoup(c, "html.parser")
 
+        src = "Default"
+        if " " in word:
+            src = "Wiki"
+
+        try:
+            title = soup.find("span", {"class": "hw dhw"})
+            title.text.title()
+
+        except AttributeError:
+            src = "Wiki"
+            if src == "Wiki":
+                r = requests.get(f"https://en.wiktionary.org/wiki/{word.lower()}")
+                c = r.text
+                soup = BeautifulSoup(c, "html.parser")
+                try:
+                    title = soup.find("ol")
+                    title.text.title()
+
+                except AttributeError:
+                    src = "Urban"
+                    r = requests.get(f"https://www.urbandictionary.com/define.php?term={word.lower()}")
+                    c = r.text
+                    soup = BeautifulSoup(c, "html.parser")
+
         with open("dictionary.json") as dat:
             data = json.load(dat)
-        obj.checker(soup, word, data)
+        obj.checker(soup, word, data, src)
 
 
-obj = Dictionary()
-obj.window.mainloop()
+if __name__ == "__main__":
+    obj = Dictionary()
+    obj.window.mainloop()
