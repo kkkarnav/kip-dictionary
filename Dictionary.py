@@ -8,28 +8,53 @@ import re
 
 class Dictionary:
 
-    def checker(self, soup, word, data):
-        try:
-            title = soup.find("span", {"class": "hw dhw"})
-            print()
-            print(title.text.title())
-            print("\n")
+    def checker(self, soup, word, data, source):
+        if source:
+            try:
+                title = soup.find("a", {"class": "word"})
+                print()
+                print(title.text.title())
+                print("\n")
 
-            definitions = []
-            counter = 0
-            for deff in soup.find_all("div", {"class": "def ddef_d db"}):
-                deff = deff.text
-                deff = re.sub(r":", "", deff)
-                definitions.append(deff)
-                counter += 1
+                definitions = []
+                counter = 0
+                for deff in soup.find_all("div", {"class": "meaning"}):
+                    deff = deff.text
+                    definitions.append(deff)
+                    counter += 1
+                    if counter >= 3:
+                        break
 
-            for i in range(counter):
-                definition = str(definitions[i]).capitalize().strip()
-                print(f"{i + 1}: {definition}")
-            sys.exit(0)
+                for i in range(counter):
+                    definition = str(definitions[i]).capitalize().strip()
+                    print(f"{i + 1}: {definition}")
+                sys.exit(0)
 
-        except AttributeError:
-            obj.catcher(word, data)
+            except AttributeError:
+                ...
+
+        else:
+            try:
+                title = soup.find("span", {"class": "hw dhw"})
+                print()
+                print(title.text.title())
+                print("\n")
+
+                definitions = []
+                counter = 0
+                for deff in soup.find_all("div", {"class": "def ddef_d db"}):
+                    deff = deff.text
+                    deff = re.sub(r":", "", deff)
+                    definitions.append(deff)
+                    counter += 1
+
+                for i in range(counter):
+                    definition = str(definitions[i]).capitalize().strip()
+                    print(f"{i + 1}: {definition}")
+                sys.exit(0)
+
+            except AttributeError:
+                obj.catcher(word, data)
 
     def catcher(self, word, data):
         if len(get_close_matches(word, data.keys())) > 0:
@@ -39,7 +64,7 @@ class Dictionary:
                 r = requests.get(f"https://dictionary.cambridge.org/dictionary/english/{word.lower()}")
                 c = r.text
                 soup = BeautifulSoup(c, "html.parser")
-                obj.checker(soup, word, data)
+                obj.checker(soup, word, data, False)
             elif yn[0].upper() == "N":
                 print("Sorry, we couldn't define that word. Please check for typos.")
             else:
@@ -54,9 +79,27 @@ class Dictionary:
         c = r.text
         soup = BeautifulSoup(c, "html.parser")
 
+        urban = False
+        if " " in word:
+            urban = True
+
+        try:
+            title = soup.find("span", {"class": "hw dhw"})
+            title.text.title()
+
+        except AttributeError:
+            r = requests.get(f"https://www.urbandictionary.com/define.php?term={word.lower()}")
+            c = r.text
+            soup = BeautifulSoup(c, "html.parser")
+
+        if urban:
+            r = requests.get(f"https://www.urbandictionary.com/define.php?term={word.lower()}")
+            c = r.text
+            soup = BeautifulSoup(c, "html.parser")
+
         with open("dictionary.json") as dat:
             data = json.load(dat)
-        obj.checker(soup, word, data)
+        obj.checker(soup, word, data, urban)
 
 
 obj = Dictionary()
