@@ -23,6 +23,7 @@ class Dictionary:
             command=lambda: [self.window.destroy(), self.__init__()]
         )
         self.restart_button.config(font="Courier")
+        self.window.bind("<Shift-Escape>", lambda x: [self.window.destroy(), self.__init__()])
         self.restart_button.grid(row=0, column=3)
         self.quit_button = tk.Button(
             self.window,
@@ -35,6 +36,7 @@ class Dictionary:
             command=lambda: self.window.destroy()
         )
         self.quit_button.config(font="Courier")
+        self.window.bind("<Escape>", lambda x: self.window.destroy())
         self.quit_button.grid(row=1, column=3)
         self.label_space = tk.Label(self.window, bg="black")
         self.label_space.grid(row=0, column=0)
@@ -55,6 +57,7 @@ class Dictionary:
             fg="white",
             relief="flat")
         self.word_entry.config(font="Courier")
+        self.word_entry.focus()
         self.word_entry.grid(row=4, column=0)
         self.submit_button = tk.Button(
             self.window,
@@ -66,6 +69,7 @@ class Dictionary:
             command=self.use_entry)
         self.submit_button.config(font="Courier")
         self.submit_button.grid(row=4, column=2)
+        self.window.bind("<Return>", lambda x: self.use_entry())
         self.button1 = tk.Button(
             self.window,
             text="Yes",
@@ -196,7 +200,8 @@ class Dictionary:
         elif source == "Wiki":
             try:
                 title = soup.find("h1", {"class": "firstHeading"})
-                title_text = title.text.title()
+                title_text = title.text
+                title_text = title_text.title()
 
                 definitions = []
                 counter = 0
@@ -253,28 +258,30 @@ class Dictionary:
         soup = BeautifulSoup(c, "html.parser")
 
         src = "Default"
-        if " " in word:
-            src = "Wiki"
 
         try:
             title = soup.find("span", {"class": "hw dhw"})
             title.text.title()
+            if title.text.lower() != word.lower():
+                src = "Wiki"
 
         except AttributeError:
             src = "Wiki"
-            if src == "Wiki":
-                r = requests.get(f"https://en.wiktionary.org/wiki/{word.lower()}")
+
+        if src == "Wiki":
+            word2 = word.replace(" ", "_")
+            r = requests.get(f"https://en.wiktionary.org/wiki/{word2.strip().lower()}")
+            c = r.text
+            soup = BeautifulSoup(c, "html.parser")
+            try:
+                title = soup.find("ol")
+                title.text.title()
+
+            except AttributeError:
+                src = "Urban"
+                r = requests.get(f"https://www.urbandictionary.com/define.php?term={word.lower()}")
                 c = r.text
                 soup = BeautifulSoup(c, "html.parser")
-                try:
-                    title = soup.find("ol")
-                    title.text.title()
-
-                except AttributeError:
-                    src = "Urban"
-                    r = requests.get(f"https://www.urbandictionary.com/define.php?term={word.lower()}")
-                    c = r.text
-                    soup = BeautifulSoup(c, "html.parser")
 
         with open("dictionary.json") as dat:
             data = json.load(dat)
