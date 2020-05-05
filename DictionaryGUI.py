@@ -38,15 +38,32 @@ class Dictionary:
             command=self.use_entry)
         self.submit_button.grid(row=3, column=1)
         self.submit_button.config(font="Courier")
+        self.button1 = tk.Button(
+            self.window,
+            text="Yes",
+            bg="#1dacd6",
+            width=16,
+            height=1,
+            command=...)
+        self.button2 = tk.Button(
+            self.window,
+            text="No",
+            bg="#1dacd6",
+            width=16,
+            height=1,
+            command=...)
+        self.label_end = tk.Label(
+            self.window,
+            text="Sorry, we couldn't define that word. \nPlease check for typos.",
+            bg="black",
+            fg="white")
+        self.label_end.config(font=("Courier", 15))
 
     def use_entry(self):
         contents = self.word_entry.get()
-        obj.main(contents)
+        self.main(contents)
 
     def display(self, definitions, number, title, src):
-        obj.label_initial.grid_remove()
-        obj.word_entry.grid_remove()
-        obj.submit_button.grid_remove()
         try:
             self.button1.destroy()
             self.button2.destroy()
@@ -55,6 +72,11 @@ class Dictionary:
 
         except AttributeError:
             ...
+
+        self.label_initial.grid_remove()
+        self.word_entry.grid_remove()
+        self.submit_button.grid_remove()
+
         titler = tk.Label(text=title, bg="black", fg="white")
         titler.grid(row=0, column=0, sticky="W")
         titler.config(font=("Courier", 15))
@@ -68,42 +90,58 @@ class Dictionary:
                 wraplength=500)
             definit.grid(row=i+1, column=0, sticky="W")
 
-    def displayfail(self, word):
-        obj.match = word
-        obj.label_initial.grid_remove()
-        obj.word_entry.grid_remove()
-        obj.submit_button.grid_remove()
-        self.label_space = tk.Label(self.window, bg="black")
-        self.label_space.grid(row=0, column=0)
-        self.label_check = tk.Label(
-            self.window,
-            text='Did you mean "'+str(word)+'"?',
-            bg="black",
-            fg="white"
+    def displayfail(self, words):
+        for word in reversed(words):
+            try:
+                self.button1.grid_remove()
+                self.button2.grid_remove()
+                self.label_check.grid_remove()
+                self.label_space.grid_remove()
+            except:
+                ...
+
+            self.label_initial.grid_remove()
+            self.word_entry.grid_remove()
+            self.submit_button.grid_remove()
+
+            self.label_space = tk.Label(self.window, bg="black")
+            self.label_space.grid(row=0, column=0)
+            self.label_check = tk.Label(
+                self.window,
+                text='Did you mean "' + str(word) + '"?',
+                bg="black",
+                fg="white"
             )
-        self.label_check.grid(row=1, column=0, columnspan=2)
-        self.label_check.config(font="Courier")
-        self.label_space = tk.Label(self.window, bg="black")
-        self.label_space.grid(row=2, column=0)
-        self.button1 = tk.Button(
-            self.window,
-            text="Yes",
-            bg="#1dacd6",
-            width=16,
-            height=1,
-            command=...)
-        self.button1["command"] = lambda x=str(obj.match): self.main(str(x))
-        self.button1.grid(row=3, column=0)
-        self.button1.config(font="Courier")
-        self.button2 = tk.Button(
-            self.window,
-            text="No",
-            bg="#1dacd6",
-            width=16,
-            height=1,
-            command=...)
-        self.button2.grid(row=3, column=1)
-        self.button2.config(font="Courier")
+            self.label_check.grid(row=1, column=0, columnspan=2)
+            self.label_check.config(font="Courier")
+            self.label_space.grid(row=2, column=0)
+
+            self.button1["command"] = lambda x=str(word): [self.main(str(x))]
+            self.button1.grid(row=3, column=0)
+            self.button1.config(font="Courier")
+
+            self.button2["command"] = lambda x=words: [self.no_button(x)]
+            self.button2.grid(row=3, column=1)
+            self.button2.config(font="Courier")
+
+    def no_button(self, words):
+        words = [i for i in words[1:]]
+        if not words:
+            self.end_screen()
+        self.displayfail(words)
+
+    def end_screen(self):
+        self.button1.grid_remove()
+        self.button2.grid_remove()
+        self.label_check.grid_remove()
+        self.label_space.grid_remove()
+
+        self.button1.destroy()
+        self.button2.destroy()
+        self.label_check.destroy()
+        self.label_space.destroy()
+
+        self.label_end.grid(row=1, column=0, columnspan=2)
 
     def checker(self, soup, word, data, source):
         if source == "Urban":
@@ -123,7 +161,7 @@ class Dictionary:
                 obj.display(definitions, counter, title_text, source)
 
             except AttributeError:
-                obj.catcher(word, data)
+                self.catcher(word, data)
 
         elif source == "Wiki":
             try:
@@ -147,9 +185,9 @@ class Dictionary:
                     success = True
 
                 if success:
-                    obj.catcher(word, data)
+                    self.catcher(word, data)
                 else:
-                    obj.display(definitions, counter, title_text, source)
+                    self.display(definitions, counter, title_text, source)
 
             except AttributeError:
                 obj.catcher(word, data)
@@ -167,17 +205,17 @@ class Dictionary:
                     definitions.append(deff)
                     counter += 1
 
-                obj.display(definitions, counter, title_text, source)
+                self.display(definitions, counter, title_text, source)
 
             except AttributeError:
-                obj.catcher(word, data)
+                self.catcher(word, data)
 
     def catcher(self, word, data):
         if len(get_close_matches(word, data.keys())) > 0:
-            match = get_close_matches(word, data.keys())[0]
-            obj.displayfail(match)
+            match = get_close_matches(word, data.keys())
+            self.displayfail(match)
         else:
-            print("Sorry, we couldn't define that word. Please check for typos.")
+            self.end_screen()
 
     def main(self, word):
         r = requests.get(f"https://dictionary.cambridge.org/dictionary/english/{word.lower()}")
@@ -210,7 +248,7 @@ class Dictionary:
 
         with open("dictionary.json") as dat:
             data = json.load(dat)
-        obj.checker(soup, word, data, src)
+        self.checker(soup, word, data, src)
 
 
 if __name__ == "__main__":
