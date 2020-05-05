@@ -12,38 +12,67 @@ class Dictionary:
         self.window.minsize(200, 100)
         self.window["bg"] = "black"
         self.window.title("Kip Interactive Dictionary")
+        self.restart_button = tk.Button(
+            self.window,
+            text="Restart",
+            bg="#1dacd6",
+            fg="Black",
+            width=10,
+            height=1,
+            relief="flat",
+            command=lambda: [self.window.destroy(), self.__init__()]
+        )
+        self.restart_button.config(font="Courier")
+        self.restart_button.grid(row=0, column=3)
+        self.quit_button = tk.Button(
+            self.window,
+            text="Quit",
+            bg="#1dacd6",
+            fg="Black",
+            width=10,
+            height=1,
+            relief="flat",
+            command=lambda: self.window.destroy()
+        )
+        self.quit_button.config(font="Courier")
+        self.quit_button.grid(row=1, column=3)
         self.label_space = tk.Label(self.window, bg="black")
         self.label_space.grid(row=0, column=0)
+        self.label_space.grid(row=1, column=0)
+        self.label_space.grid(row=2, column=0)
         self.label_initial = tk.Label(
             self.window,
             text="Input a word to define:",
             bg="black",
-            fg="white")
+            fg="white",)
         self.label_initial.config(font=("Courier", 15))
-        self.label_initial.grid(row=1, column=0, columnspan=2)
+        self.label_initial.grid(row=2, column=0, columnspan=3)
         self.label_space = tk.Label(self.window, bg="black")
-        self.label_space.grid(row=2, column=0)
+        self.label_space.grid(row=3, column=0)
         self.word_entry = tk.Entry(
             self.window,
-            bg="black",
-            fg="white")
-        self.word_entry.grid(row=3, column=0)
+            bg="#0f0f0f",
+            fg="white",
+            relief="flat")
         self.word_entry.config(font="Courier")
+        self.word_entry.grid(row=4, column=0)
         self.submit_button = tk.Button(
             self.window,
             text="Submit",
             bg="#1dacd6",
             width=16,
             height=1,
+            relief="flat",
             command=self.use_entry)
-        self.submit_button.grid(row=3, column=1)
         self.submit_button.config(font="Courier")
+        self.submit_button.grid(row=4, column=2)
         self.button1 = tk.Button(
             self.window,
             text="Yes",
             bg="#1dacd6",
             width=16,
             height=1,
+            relief="flat",
             command=...)
         self.button2 = tk.Button(
             self.window,
@@ -51,6 +80,7 @@ class Dictionary:
             bg="#1dacd6",
             width=16,
             height=1,
+            relief="flat",
             command=...)
         self.label_end = tk.Label(
             self.window,
@@ -78,7 +108,7 @@ class Dictionary:
         self.submit_button.grid_remove()
 
         titler = tk.Label(text=title, bg="black", fg="white")
-        titler.grid(row=0, column=0, sticky="W")
+        titler.grid(row=1, column=0, sticky="W")
         titler.config(font=("Courier", 15))
         for i in range(number):
             definition = str(definitions[i]).capitalize()
@@ -88,7 +118,7 @@ class Dictionary:
                 bg="black",
                 fg="white",
                 wraplength=500)
-            definit.grid(row=i+1, column=0, sticky="W")
+            definit.grid(row=i+2, column=0, sticky="W")
 
     def displayfail(self, words):
         for word in reversed(words):
