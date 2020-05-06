@@ -10,12 +10,12 @@ class Dictionary:
     def __init__(self):
         self.window = tk.Tk()
         self.window.minsize(200, 100)
-        self.window["bg"] = "black"
+        self.window["bg"] = "#222021"
         self.window.title("Kip Interactive Dictionary")
         self.restart_button = tk.Button(
             self.window,
             text="Restart",
-            bg="#1dacd6",
+            bg="#008ecc",
             fg="Black",
             width=10,
             height=1,
@@ -23,12 +23,12 @@ class Dictionary:
             command=lambda: [self.window.destroy(), self.__init__()]
         )
         self.restart_button.config(font="Courier")
-        self.window.bind("<Shift-Escape>", lambda x: [self.window.destroy(), self.__init__()])
+        self.window.bind("<Shift-Escape>", lambda x: [self.window.destroy(), self.window.mainloop()])
         self.restart_button.grid(row=0, column=3)
         self.quit_button = tk.Button(
             self.window,
             text="Quit",
-            bg="#1dacd6",
+            bg="#008ecc",
             fg="Black",
             width=10,
             height=1,
@@ -36,25 +36,27 @@ class Dictionary:
             command=lambda: self.window.destroy()
         )
         self.quit_button.config(font="Courier")
-        self.window.bind("<Escape>", lambda x: self.window.destroy())
+        self.window.bind("<Escape>", lambda x: self.window.grid_remove())
         self.quit_button.grid(row=1, column=3)
-        self.label_space = tk.Label(self.window, bg="black")
+        self.label_space = tk.Label(self.window, bg="#222021")
         self.label_space.grid(row=0, column=0)
         self.label_space.grid(row=1, column=0)
         self.label_space.grid(row=2, column=0)
         self.label_initial = tk.Label(
             self.window,
             text="Input a word to define:",
-            bg="black",
+            bg="#222021",
             fg="white",)
         self.label_initial.config(font=("Courier", 15))
         self.label_initial.grid(row=2, column=0, columnspan=3)
-        self.label_space = tk.Label(self.window, bg="black")
+        self.label_space = tk.Label(self.window, bg="#222021")
         self.label_space.grid(row=3, column=0)
         self.word_entry = tk.Entry(
             self.window,
             bg="#0f0f0f",
             fg="white",
+            cursor="circle",
+            insertbackground="#008ecc",
             relief="flat")
         self.word_entry.config(font="Courier")
         self.word_entry.focus()
@@ -62,7 +64,7 @@ class Dictionary:
         self.submit_button = tk.Button(
             self.window,
             text="Submit",
-            bg="#1dacd6",
+            bg="#008ecc",
             width=16,
             height=1,
             relief="flat",
@@ -73,7 +75,7 @@ class Dictionary:
         self.button1 = tk.Button(
             self.window,
             text="Yes",
-            bg="#1dacd6",
+            bg="#008ecc",
             width=16,
             height=1,
             relief="flat",
@@ -81,7 +83,7 @@ class Dictionary:
         self.button2 = tk.Button(
             self.window,
             text="No",
-            bg="#1dacd6",
+            bg="#008ecc",
             width=16,
             height=1,
             relief="flat",
@@ -89,7 +91,7 @@ class Dictionary:
         self.label_end = tk.Label(
             self.window,
             text="Sorry, we couldn't define that word. \nPlease check for typos.",
-            bg="black",
+            bg="#222021",
             fg="white")
         self.label_end.config(font=("Courier", 15))
 
@@ -99,10 +101,10 @@ class Dictionary:
 
     def display(self, definitions, number, title, src):
         try:
-            self.button1.destroy()
-            self.button2.destroy()
-            self.label_check.destroy()
-            self.label_space.destroy()
+            self.button1.grid_remove()
+            self.button2.grid_remove()
+            self.label_check.grid_remove()
+            self.label_space.grid_remove()
 
         except AttributeError:
             ...
@@ -111,7 +113,7 @@ class Dictionary:
         self.word_entry.grid_remove()
         self.submit_button.grid_remove()
 
-        titler = tk.Label(text=title, bg="black", fg="white")
+        titler = tk.Label(text=title, bg="#222021", fg="white")
         titler.grid(row=1, column=0, sticky="W")
         titler.config(font=("Courier", 15))
         for i in range(number):
@@ -119,7 +121,7 @@ class Dictionary:
             definit = tk.Label(
                 text=(definition if src == "Wiki"
                       else (str(i+1)+": "+str(definition))),
-                bg="black",
+                bg="#222021",
                 fg="white",
                 wraplength=500)
             definit.grid(row=i+2, column=0, sticky="W")
@@ -138,12 +140,12 @@ class Dictionary:
             self.word_entry.grid_remove()
             self.submit_button.grid_remove()
 
-            self.label_space = tk.Label(self.window, bg="black")
+            self.label_space = tk.Label(self.window, bg="#222021")
             self.label_space.grid(row=0, column=0)
             self.label_check = tk.Label(
                 self.window,
                 text='Did you mean "' + str(word) + '"?',
-                bg="black",
+                bg="#222021",
                 fg="white"
             )
             self.label_check.grid(row=1, column=0, columnspan=2)
@@ -192,7 +194,7 @@ class Dictionary:
                     if counter >= 3:
                         break
 
-                obj.display(definitions, counter, title_text, source)
+                self.display(definitions, counter, title_text, source)
 
             except AttributeError:
                 self.catcher(word, data)
@@ -225,7 +227,7 @@ class Dictionary:
                     self.display(definitions, counter, title_text, source)
 
             except AttributeError:
-                obj.catcher(word, data)
+                self.catcher(word, data)
 
         elif source == "Default":
             try:
