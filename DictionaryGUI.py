@@ -55,7 +55,6 @@ class Dictionary:
             self.window,
             bg="#0f0f0f",
             fg="white",
-            cursor="circle",
             insertbackground="#008ecc",
             relief="flat")
         self.word_entry.config(font="Courier")
@@ -106,7 +105,7 @@ class Dictionary:
             self.label_check.grid_remove()
             self.label_space.grid_remove()
 
-        except AttributeError:
+        except:
             ...
 
         self.label_initial.grid_remove()
@@ -136,9 +135,12 @@ class Dictionary:
             except:
                 ...
 
-            self.label_initial.grid_remove()
-            self.word_entry.grid_remove()
-            self.submit_button.grid_remove()
+            try:
+                self.label_initial.grid_remove()
+                self.word_entry.grid_remove()
+                self.submit_button.grid_remove()
+            except:
+                ...
 
             self.label_space = tk.Label(self.window, bg="#222021")
             self.label_space.grid(row=0, column=0)
@@ -172,10 +174,10 @@ class Dictionary:
         self.label_check.grid_remove()
         self.label_space.grid_remove()
 
-        self.button1.destroy()
-        self.button2.destroy()
-        self.label_check.destroy()
-        self.label_space.destroy()
+        self.button1.grid_remove()
+        self.button2.grid_remove()
+        self.label_check.grid_remove()
+        self.label_space.grid_remove()
 
         self.label_end.grid(row=1, column=0, columnspan=2)
 
