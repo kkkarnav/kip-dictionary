@@ -10,6 +10,7 @@ class Dictionary:
     def __init__(self):
         self.window = tk.Tk()
         self.window.minsize(200, 100)
+        self.window.resizable(width=False, height=False)
         self.window["bg"] = "#222021"
         self.window.title("Kip Interactive Dictionary")
         self.restart_button = tk.Button(
