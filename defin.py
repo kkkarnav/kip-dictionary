@@ -2,11 +2,13 @@
 import requests
 from bs4 import BeautifulSoup
 import random
+import json
+from difflib import get_close_matches
 
 
 # scrape the accepted url and return the response
-def get_result(url):
-	return requests.get((url + word.strip().lower()), headers=header[random.randrange(0, 5)])
+def get_result(url, accepted_word):
+	return requests.get((url + accepted_word.strip().lower()), headers=header[random.randrange(0, 5)])
 
 
 # check if the accepted response from the accepted source is a success or failure
@@ -43,6 +45,8 @@ def process_url_wiki(response):
 				content_text = '> ' + content_text + '\n'
 				print(content_text)
 
+	print('_________________________________________________')
+
 
 def process_url_urban(response):
 	soup = BeautifulSoup(response.text, 'html.parser')
@@ -62,6 +66,8 @@ def process_url_urban(response):
 	# for output_text in output.childGenerator():
 	#   if str(type(output_text)) == "<class 'bs4.element.NavigableString'>":
 	#        print('> ' + str(output_text))
+
+	print('_________________________________________________')
 
 
 def process_url_cambridge(response):
@@ -91,6 +97,43 @@ def process_url_cambridge(response):
 
 		print(output_text)
 
+	print('_________________________________________________')
+
+
+# handle typos by looking for a close match
+def reset_word(old_word):
+	# open and load a dictionary
+	with open("dictionary.json") as dictionary:
+		data = json.load(dictionary)
+
+		# if the word has a close match
+		matches = get_close_matches(old_word, data.keys())
+		if len(matches) > 0:
+			# ask the user if they meant the close match instead of the input word
+			yn = input(f"Did you mean {matches[0]} instead? ")
+			if yn[0].lower() == 'y':
+				new_word = matches[0]
+				check_word(new_word)
+			elif yn[0].lower() == 'n':
+				print("Sorry, something went wrong.")
+			else:
+				print("Sorry, we didn't understand your entry.")
+
+
+def check_word(word):
+	# get the definitions from the three sites
+	process_url_cambridge(check_result(get_result(url_cambridge, word), 'cambridge dictionary'))
+	process_url_wiki(check_result(get_result(url_wiki, word), 'wiktionary'))
+	try:
+		process_url_urban(check_result(get_result(url_urban, word), 'urban dictionary'))
+	except AttributeError:
+		print('An error was occurred while looking in urban dictionary')
+
+	if get_result(url_cambridge, word).status_code == 404 \
+			or get_result(url_wiki, word).status_code == 404 \
+			or get_result(url_urban, word).status_code == 404:
+		reset_word(word)
+
 
 if __name__ == '__main__':
 
@@ -107,10 +150,4 @@ if __name__ == '__main__':
 	url_urban = 'https://www.urbandictionary.com/define.php?term='
 	url_cambridge = 'https://dictionary.cambridge.org/dictionary/english/'
 
-	# get the definitions from the three sites
-	process_url_cambridge(check_result(get_result(url_cambridge), 'cambridge dictionary'))
-	process_url_wiki(check_result(get_result(url_wiki), 'wiktionary'))
-	try:
-		process_url_urban(check_result(get_result(url_urban), 'urban dictionary'))
-	except AttributeError:
-		print('An error was occurred while looking in urban dictionary')
+	check_word(word)
